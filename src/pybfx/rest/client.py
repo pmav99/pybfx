@@ -158,6 +158,24 @@ class BFXClient(object):
         path = "/v2/platform/status"
         return bool(self._get(self._url_for(path))[0])
 
+    def tickers(self, *symbols):
+        """
+        Return a high level overview of the state of the market.
+
+        It shows you the current best bid and ask, as well as the last trade price. It also includes
+        information such as daily volume and how much the price has moved over the last day.
+
+            GET /v2/tickers?symbols=...
+            curl 'https://api.bitfinex.com/v2/tickers?symbols=tBTCUSD,tLTCUSD,fUSD'
+            [
+                ["tBTCUSD", 6702.2, 82.42873442, 6702.3, 146.14652325, 82.2, 0.0124, 6702.3, 22520.92767376, 6771, 6576.9],
+                ["fUSD", 0.00020966, 0.00019301, 30, 4062509.97073771, 0.00017034, 5, 813114.16312721, -3.418e-05, -0.1593, 0.00018034, 231276127.5778418, 0.00021999, 4.9e-07]
+            ]
+
+        """
+        params = {"symbols": ",".join(symbols)}
+        path = "/v2/tickers"
+        return self._get(self._url_for(path), params=params)
 
 __all__ = [
     "BFXClient",

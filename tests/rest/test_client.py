@@ -51,3 +51,12 @@ class TestV2Public(BasicTestClient):
     def test_platform_status(self, requests_mock, json_response, result):
         requests_mock.get(self.client._url_for("/v2/platform/status"), json=json_response)
         assert self.client.platform_status() == result
+
+    def test_tickers(self, requests_mock):
+        symbols = ["tBTCUSD", "fUSD"]
+        expected = [
+            ["tBTCUSD", 6702.2, 82.42873442, 6702.3, 146.14652325, 82.2, 0.0124, 6702.3, 22520.92767376, 6771, 6576.9],
+            ["fUSD", 0.00020966, 0.00019301, 30, 4062509.97073771, 0.00017034, 5, 813114.16312721, -3.418e-05, -0.1593, 0.00018034, 231276127.5778418, 0.00021999, 4.9e-07]
+        ]
+        requests_mock.get(self.client._url_for("/v2/tickers?symbols=%s" % ",".join(symbols)), json=expected)
+        assert expected == self.client.tickers(*symbols)
