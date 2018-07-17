@@ -63,6 +63,14 @@ class TestV1Private(BasicTestClient):
         requests_mock.post(self.client._url_for("/v1/key_info"), json=expected)
         assert expected == self.client.key_info()
 
+    def test_balances(self, requests_mock):
+        expected = [
+            {"type": "deposit", "currency": "btc", "amount": "0.0", "available": "0.0" },
+            {"type": "deposit", "currency": "usd", "amount": "1.0", "available": "1.0" }
+        ]
+        requests_mock.post(self.client._url_for("/v1/balances"), json=expected)
+        assert expected == self.client.balances()
+
 
 class TestV2Public(BasicTestClient):
 

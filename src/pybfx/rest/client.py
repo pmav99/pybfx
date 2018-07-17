@@ -167,6 +167,18 @@ class BFXClient(object):
         path = "/v1/key_info"
         return self._post_v1(path)
 
+    def balances(self):
+        """
+        Return the balances of all the coins.
+
+            curl -X POST https://api.bitfinex.com/v1/balances
+            [{"type":"deposit", "currency":"btc", "amount":"0.0", "available":"0.0" },{ "type":"deposit", "currency":"usd", "amount":"1.0", "available":"1.0" }]
+
+        """
+        path = "/v1/balances"
+        return self._post_v1(path)
+
+
     # V2 Public Endpoints #
 
     def platform_status(self):
