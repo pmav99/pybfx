@@ -22,6 +22,12 @@ class TestV1Public(BasicTestClient):
         requests_mock.get(self.client._url_for("/v1/today/BTCUSD"), json=expected)
         assert expected == self.client.today("BTCUSD")
 
+    def test_ticker(self, requests_mock):
+        symbol = "btcusd"
+        expected = {"ask": "6689.7", "bid": "6689.6", "high": "6771.0", "last_price": "6689.6", "low": "6576.9", "mid": "6689.65", "timestamp": "1531828672.2591913", "volume": "22255.610510320003"}
+        requests_mock.get(self.client._url_for(f"/v1/pubticker/{symbol}"), json=expected)
+        assert expected == self.client.ticker(symbol)
+
 
 class TestV2Public(BasicTestClient):
 

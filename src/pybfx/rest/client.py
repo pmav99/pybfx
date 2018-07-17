@@ -71,15 +71,32 @@ class BFXClient(object):
 
     def today(self, symbol):
         """
-        GET /v1/today/:symbol
+        Return day stats about the specified symbol.
 
+        It shows the high, low and volume.
+
+            GET /v1/today/:symbol
             curl "https://api.bitfinex.com/v1/today/btcusd"
-
             {"low":"550.09","high":"572.2398","volume":"7305.33119836"}
+
         """
         path = f"/v1/today/{symbol}"
         return self._get(self._url_for(path))
 
+    def ticker(self, symbol):
+        """
+        The ticker is a high level overview of the state of the market.
+
+        It shows you the current best bid and ask, as well as the last trade price. It also includes
+        information such as daily volume and how much the price has moved over the last day.
+
+            GET /v1/pubticker/:symbol
+            curl https://api.bitfinex.com/v1/pubticker/btcusd
+            {"ask": "6689.7", "bid": "6689.6", "high": "6771.0", "last_price": "6689.6", "low": "6576.9", "mid": "6689.65", "timestamp": "1531828672.2591913", "volume": "22255.610510320003"}
+
+        """
+        path = f"/v1/pubticker/{symbol}"
+        return self._get(self._url_for(path))
     # V2 Public Endpoints #
 
     def platform_status(self):
