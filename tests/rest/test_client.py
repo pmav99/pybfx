@@ -54,6 +54,15 @@ class TestV1Private(BasicTestClient):
         requests_mock.post(self.client._url_for("/v1/account_infos"), json=expected)
         assert expected == self.client.account_info()
 
+    def test_key_info(self, requests_mock):
+        expected = {
+            "account": {"read": True, "write": False},
+            "history": {"read": True, "write": False},
+            "orders": {"read": True, "write": True},
+        }
+        requests_mock.post(self.client._url_for("/v1/key_info"), json=expected)
+        assert expected == self.client.key_info()
+
 
 class TestV2Public(BasicTestClient):
 

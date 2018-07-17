@@ -157,6 +157,16 @@ class BFXClient(object):
         path = "/v1/account_infos"
         return self._post_v1(path)
 
+    def key_info(self):
+        """
+        Return the permissions of the key being used to generate this request.
+
+            curl -X POST https://api.bitfinex.com/v1/key_info
+
+        """
+        path = "/v1/key_info"
+        return self._post_v1(path)
+
     # V2 Public Endpoints #
 
     def platform_status(self):
