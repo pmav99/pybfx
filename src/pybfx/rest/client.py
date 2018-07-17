@@ -126,7 +126,7 @@ class BFXClient(object):
         Return the list of the available symbols.
 
             GET /v1/symbols
-            curl "https://api.bitfinex.com/v:version/symbols"
+            curl "https://api.bitfinex.com/v1/symbols"
             ["atmbtc", "atmeth", "hotusd", "hotbtc", "hoteth", "dtausd", ...]
 
         """
