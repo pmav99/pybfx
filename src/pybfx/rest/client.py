@@ -57,7 +57,7 @@ class BFXClient(object):
                 content = response.json()
             except JSONDecodeError:
                 content = response.text
-            logger.exception("Couldn't access: %s", response.url)
+            logger.error("Couldn't access: %s", response.url)
             raise BFXException(response.status_code, response.reason, content)
 
     def _url_for(self, path):
