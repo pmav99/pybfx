@@ -46,10 +46,10 @@ class BFXClient(object):
         signature = hm.hexdigest()
         return {"X-BFX-APIKEY": self.key, "X-BFX-SIGNATURE": signature, "X-BFX-PAYLOAD": data}
 
-    def _handle_request(self, method, url, data=None, params=None):
+    def _handle_request(self, method, url, headers=None, data=None, params=None):
         if data and params:
             raise ValueError("You can't specify both `data` and `params`")
-        response = method(url, params=params, data=data, timeout=self.timeout, verify=True)
+        response = method(url, params=params, headers=headers, data=data, timeout=self.timeout, verify=True)
         if response.status_code == 200:
             return response.json()
         else:
@@ -67,8 +67,16 @@ class BFXClient(object):
         url = self._url_for(path)
         return self._handle_request(requests.get, url, params=params)
 
-    def _post(self, url, payload=None):
-        return self._handle_request(requests.post, url, payload=payload)
+    def _post_v1(self, path, data=None):
+        url = self._url_for(path)
+        if data is None:
+            data = {}
+        data.update(**{
+            "nonce": self._get_nonce(),
+            "request": path,
+        })
+        headers = self._get_headers_v1(data)
+        return self._handle_request(requests.post, url, headers=headers, data=data)
 
     # V1 Public Endpoints #
 
@@ -137,6 +145,18 @@ class BFXClient(object):
         path = "/v1/symbol_details"
         return self._get(path)
 
+    # V1 Private Endpoints #
+
+    def account_info(self):
+        """
+        Return information about your account (trading fees).
+
+            curl -X POST https://api.bitfinex.com/v1/account_infos
+
+        """
+        path = "/v1/account_infos"
+        return self._post_v1(path)
+
     # V2 Public Endpoints #
 
     def platform_status(self):
@@ -183,6 +203,7 @@ class BFXClient(object):
             RType = rtypes.TradingPairData if result[0][0] == "t" else rtypes.FundingCurrencyData
             results.append(RType(*result))
         return results
+
 
 __all__ = [
     "BFXClient",

@@ -47,6 +47,14 @@ class TestV1Public(BasicTestClient):
         assert expected == self.client.symbol_details()
 
 
+class TestV1Private(BasicTestClient):
+
+    def test_account_info(self, requests_mock):
+        expected = [{"maker_fees":"0.1", "taker_fees":"0.2", "fees":[{ "pairs":"BTC", "maker_fees":"0.1", "taker_fees":"0.2" },{ "pairs":"LTC", "maker_fees":"0.1", "taker_fees":"0.2" }, { "pairs":"ETH", "maker_fees":"0.1", "taker_fees":"0.2" }]}]
+        requests_mock.post(self.client._url_for("/v1/account_infos"), json=expected)
+        assert expected == self.client.account_info()
+
+
 class TestV2Public(BasicTestClient):
 
     @pytest.mark.parametrize("json_response, result", [([1], True), ([0], False)])
