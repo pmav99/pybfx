@@ -63,7 +63,8 @@ class BFXClient(object):
     def _url_for(self, path):
         return self.base_url + path
 
-    def _get(self, url, params=None):
+    def _get(self, path, params=None):
+        url = self._url_for(path)
         return self._handle_request(requests.get, url, params=params)
 
     def _post(self, url, payload=None):
@@ -83,7 +84,7 @@ class BFXClient(object):
 
         """
         path = f"/v1/today/{symbol}"
-        return self._get(self._url_for(path))
+        return self._get(path)
 
     def ticker(self, symbol):
         """
@@ -98,7 +99,7 @@ class BFXClient(object):
 
         """
         path = f"/v1/pubticker/{symbol}"
-        return self._get(self._url_for(path))
+        return self._get(path)
 
     def stats(self, symbol):
         """
@@ -110,7 +111,7 @@ class BFXClient(object):
 
         """
         path = f"/v1/stats/{symbol}"
-        return self._get(self._url_for(path))
+        return self._get(path)
 
     def symbols(self):
         """
@@ -122,7 +123,7 @@ class BFXClient(object):
 
         """
         path = "/v1/symbols"
-        return self._get(self._url_for(path))
+        return self._get(path)
 
     def symbol_details(self):
         """
@@ -134,7 +135,7 @@ class BFXClient(object):
 
         """
         path = "/v1/symbol_details"
-        return self._get(self._url_for(path))
+        return self._get(path)
 
     # V2 Public Endpoints #
 
@@ -158,7 +159,7 @@ class BFXClient(object):
         """
         # curl https://api.bitfinex.com/v2/platform/status
         path = "/v2/platform/status"
-        return bool(self._get(self._url_for(path))[0])
+        return bool(self._get(path)[0])
 
     def tickers(self, *symbols):
         """
@@ -178,7 +179,7 @@ class BFXClient(object):
         params = {"symbols": ",".join(symbols)}
         path = "/v2/tickers"
         results = []
-        for result in self._get(self._url_for(path), params=params):
+        for result in self._get(path, params=params):
             RType = rtypes.TradingPairData if result[0][0] == "t" else rtypes.FundingCurrencyData
             results.append(RType(*result))
         return results
