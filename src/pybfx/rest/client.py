@@ -97,6 +97,19 @@ class BFXClient(object):
         """
         path = f"/v1/pubticker/{symbol}"
         return self._get(self._url_for(path))
+
+    def stats(self, symbol):
+        """
+        Various statistics about the requested pair.
+
+            GET /v1/stats/:symbol
+            curl https://api.bitfinex.com/v1/stats/btcusd
+            [{"period": 1, "volume": "22302.52773652"}, {"period": 7, "volume": "132145.49652158"}, {"period": 30, "volume": "651144.20420434"}]
+
+        """
+        path = f"/v1/stats/{symbol}"
+        return self._get(self._url_for(path))
+
     # V2 Public Endpoints #
 
     def platform_status(self):

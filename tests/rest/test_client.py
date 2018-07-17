@@ -28,6 +28,12 @@ class TestV1Public(BasicTestClient):
         requests_mock.get(self.client._url_for(f"/v1/pubticker/{symbol}"), json=expected)
         assert expected == self.client.ticker(symbol)
 
+    def test_stats(self, requests_mock):
+        symbol = "btcusd"
+        expected = [{"period": 1, "volume": "22302.52773652"}, {"period": 7, "volume": "132145.49652158"}, {"period": 30, "volume": "651144.20420434"}]
+        requests_mock.get(self.client._url_for(f"/v1/stats/{symbol}"), json=expected)
+        assert expected == self.client.stats(symbol)
+
 
 class TestV2Public(BasicTestClient):
 
