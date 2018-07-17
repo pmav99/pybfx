@@ -34,6 +34,11 @@ class TestV1Public(BasicTestClient):
         requests_mock.get(self.client._url_for(f"/v1/stats/{symbol}"), json=expected)
         assert expected == self.client.stats(symbol)
 
+    def test_symbols(self, requests_mock):
+        expected = ["atmbtc", "atmeth", "hotusd", "hotbtc", "hoteth", "dtausd"]
+        requests_mock.get(self.client._url_for(f"/v1/symbols"), json=expected)
+        assert expected == self.client.symbols()
+
 
 class TestV2Public(BasicTestClient):
 

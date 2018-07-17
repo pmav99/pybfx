@@ -110,6 +110,18 @@ class BFXClient(object):
         path = f"/v1/stats/{symbol}"
         return self._get(self._url_for(path))
 
+    def symbols(self):
+        """
+        Return the list of the available symbols.
+
+            GET /v1/symbols
+            curl "https://api.bitfinex.com/v:version/symbols"
+            ["atmbtc", "atmeth", "hotusd", "hotbtc", "hoteth", "dtausd", ...]
+
+        """
+        path = "/v1/symbols"
+        return self._get(self._url_for(path))
+
     # V2 Public Endpoints #
 
     def platform_status(self):
