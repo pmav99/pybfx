@@ -122,6 +122,18 @@ class BFXClient(object):
         path = "/v1/symbols"
         return self._get(self._url_for(path))
 
+    def symbol_details(self):
+        """
+        Return a list of valid symbol IDs and the pair details.
+
+            GET /v1/symbol_details
+            curl https://api.bitfinex.com/v1/symbols_details
+            [{"expiration": "NA", "initial_margin": "30.0", "margin": False, "maximum_order_size": "100000.0", "minimum_margin": "15.0", "minimum_order_size": "190.0", "pair": "iqxeos", "price_precision": 5}]
+
+        """
+        path = "/v1/symbol_details"
+        return self._get(self._url_for(path))
+
     # V2 Public Endpoints #
 
     def platform_status(self):

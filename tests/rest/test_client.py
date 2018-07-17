@@ -39,6 +39,11 @@ class TestV1Public(BasicTestClient):
         requests_mock.get(self.client._url_for(f"/v1/symbols"), json=expected)
         assert expected == self.client.symbols()
 
+    def test_symbol_details(self, requests_mock):
+        expected = [{"expiration": "NA", "initial_margin": "30.0", "margin": False, "maximum_order_size": "100000.0", "minimum_margin": "15.0", "minimum_order_size": "190.0", "pair": "iqxeos", "price_precision": 5}]
+        requests_mock.get(self.client._url_for("/v1/symbol_details"), json=expected)
+        assert expected == self.client.symbol_details()
+
 
 class TestV2Public(BasicTestClient):
 
