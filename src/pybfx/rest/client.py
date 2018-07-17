@@ -2,10 +2,10 @@ import base64
 import hashlib
 import hmac
 import json
-from json.decoder import JSONDecodeError
 import logging
 import os
 import time
+from json.decoder import JSONDecodeError
 
 import requests
 
@@ -16,8 +16,6 @@ class BFXException(Exception):
     pass
 
 
-
-
 class BFXClient(object):
     """
     Client for the bitfinex.com API (both v1 and v2).
@@ -26,10 +24,11 @@ class BFXClient(object):
     """
 
     def __init__(self, key=None, secret=None, nonce_multiplier=1.0, timeout=5):
-        self.nonce_multiplier = float(nonce_multiplier)
         self.key = key or os.environ.get("BITFINEX_KEY")
         self.secret = secret or os.environ.get("BITFINEX_SECRET")
-        self.nonce_multiplier = nonce_multiplier
+        self.nonce_multiplier = float(nonce_multiplier)
+        self.timeout = timeout
+        self.base_url = "https://api.bitfinex.com"
 
     def _get_nonce(self):
         """Returns a nonce used in authentication.
@@ -43,16 +42,12 @@ class BFXClient(object):
         data = base64.standard_b64encode(json_payload.encode('utf8'))
         hm = hmac.new(self.secret.encode('utf8'), data, hashlib.sha384)
         signature = hm.hexdigest()
-        return {
-            "X-BFX-APIKEY": self.key,
-            "X-BFX-SIGNATURE": signature,
-            "X-BFX-PAYLOAD": data
-        }
+        return {"X-BFX-APIKEY": self.key, "X-BFX-SIGNATURE": signature, "X-BFX-PAYLOAD": data}
 
-    def _handle_request(self, method, url, payload=None, params=None):
-        if payload and params:
-            raise ValueError("You can't specify both payload and params")
-        response = method(url, params=params, payload=payload, timeout=self.timeout, verify=True)
+    def _handle_request(self, method, url, data=None, params=None):
+        if data and params:
+            raise ValueError("You can't specify both `data` and `params`")
+        response = method(url, params=params, data=data, timeout=self.timeout, verify=True)
         if response.status_code == 200:
             return response.json()
         else:
@@ -63,11 +58,14 @@ class BFXClient(object):
             logger.exception("Couldn't access: %s", response.url)
             raise BFXException(response.status_code, response.reason, content)
 
-    def _get(self, url, params):
-        self._handle_request(requests.get, url, params=params)
+    def _url_for(self, path):
+        return self.base_url + path
 
-    def _post(self, url, payload):
-        self._handle_request(requests.post, url, payload=payload)
+    def _get(self, url, params=None):
+        return self._handle_request(requests.get, url, params=params)
+
+    def _post(self, url, payload=None):
+        return self._handle_request(requests.post, url, payload=payload)
 
     # V1 Public Endpoints #
 
@@ -80,7 +78,7 @@ class BFXClient(object):
             {"low":"550.09","high":"572.2398","volume":"7305.33119836"}
         """
         path = f"/v1/today/{symbol}"
-        return self._get(self.url_for(path, symbol))
+        return self._get(self._url_for(path))
 
     # V2 Public Endpoints #
 
@@ -103,8 +101,8 @@ class BFXClient(object):
 
         """
         # curl https://api.bitfinex.com/v2/platform/status
-        path = "/v2/platform/status/"
-        return bool(self._get(self.url_for(path))[0])
+        path = "/v2/platform/status"
+        return bool(self._get(self._url_for(path))[0])
 
 
 __all__ = [

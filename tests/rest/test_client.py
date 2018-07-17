@@ -1,7 +1,31 @@
-def test_can_import_client():
-    from pybfx import BFXClient
+import pytest
 
-def test_can_create_instance():
-    from pybfx import BFXClient
-    client = Client()
 
+class BasicTestClient(object):
+
+    def setup(self):
+        from pybfx import BFXClient
+        self.client = BFXClient()
+
+
+class TestBFXClient(BasicTestClient):
+
+    def test_can_create_client_instance(self):
+        from pybfx import BFXClient
+        client = BFXClient()  # noqa F481
+
+
+class TestV1Public(BasicTestClient):
+
+    def test_today(self, requests_mock):
+        expected = {'low': '6327.1', 'high': '6711.0', 'volume': '29054.15345665'}
+        requests_mock.get(self.client._url_for("/v1/today/BTCUSD"), json=expected)
+        assert expected == self.client.today("BTCUSD")
+
+
+class TestV2Public(BasicTestClient):
+
+    @pytest.mark.parametrize("json_response, result", [([1], True), ([0], False)])
+    def test_platform_status(self, requests_mock, json_response, result):
+        requests_mock.get(self.client._url_for("/v2/platform/status"), json=json_response)
+        assert self.client.platform_status() == result
