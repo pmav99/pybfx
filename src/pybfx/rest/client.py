@@ -9,6 +9,8 @@ from json.decoder import JSONDecodeError
 
 import requests
 
+from . import rtypes
+
 logger = logging.getLogger(__name__)
 
 
@@ -175,7 +177,11 @@ class BFXClient(object):
         """
         params = {"symbols": ",".join(symbols)}
         path = "/v2/tickers"
-        return self._get(self._url_for(path), params=params)
+        results = []
+        for result in self._get(self._url_for(path), params=params):
+            RType = rtypes.TradingPairData if result[0][0] == "t" else rtypes.FundingCurrencyData
+            results.append(RType(*result))
+        return results
 
 __all__ = [
     "BFXClient",
