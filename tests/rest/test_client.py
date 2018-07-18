@@ -7,7 +7,7 @@ class BasicTestClient(object):
 
     def setup(self):
         from pybfx import BFXClient
-        self.client = BFXClient()
+        self.client = BFXClient(key="key", secret="secret")
 
 
 class TestBFXClient(BasicTestClient):
