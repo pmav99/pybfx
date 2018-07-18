@@ -49,7 +49,9 @@ class BFXClient(object):
     def _handle_request(self, method, url, headers=None, data=None, params=None):
         if data and params:
             raise ValueError("You can't specify both `data` and `params`")
-        response = method(url, params=params, headers=headers, data=data, timeout=self.timeout, verify=True)
+        response = method(
+            url, params=params, headers=headers, data=data, timeout=self.timeout, verify=True
+        )
         if response.status_code == 200:
             return response.json()
         else:
@@ -103,7 +105,7 @@ class BFXClient(object):
 
             GET /v1/pubticker/:symbol
             curl https://api.bitfinex.com/v1/pubticker/btcusd
-            {"ask": "6689.7", "bid": "6689.6", "high": "6771.0", "last_price": "6689.6", "low": "6576.9", "mid": "6689.65", "timestamp": "1531828672.2591913", "volume": "22255.610510320003"}
+            {"ask": "6689.7", "bid": "6689.6", "high": "6771.0", "last_price": "6689.6", "low": "6576.9", "mid": "6689.65", "timestamp": "1531828672.2591913", "volume": "22255.610510320003"}   # noqa E501
 
         """
         path = f"/v1/pubticker/{symbol}"
@@ -115,7 +117,7 @@ class BFXClient(object):
 
             GET /v1/stats/:symbol
             curl https://api.bitfinex.com/v1/stats/btcusd
-            [{"period": 1, "volume": "22302.52773652"}, {"period": 7, "volume": "132145.49652158"}, {"period": 30, "volume": "651144.20420434"}]
+            [{"period": 1, "volume": "22302.52773652"}, {"period": 7, "volume": "132145.49652158"}, {"period": 30, "volume": "651144.20420434"}]  # noqa E501
 
         """
         path = f"/v1/stats/{symbol}"
@@ -139,7 +141,7 @@ class BFXClient(object):
 
             GET /v1/symbol_details
             curl https://api.bitfinex.com/v1/symbols_details
-            [{"expiration": "NA", "initial_margin": "30.0", "margin": False, "maximum_order_size": "100000.0", "minimum_margin": "15.0", "minimum_order_size": "190.0", "pair": "iqxeos", "price_precision": 5}]
+            [{"expiration": "NA", "initial_margin": "30.0", "margin": False, "maximum_order_size": "100000.0", "minimum_margin": "15.0", "minimum_order_size": "190.0", "pair": "iqxeos", "price_precision": 5}]  # noqa E501
 
         """
         path = "/v1/symbol_details"
@@ -172,12 +174,12 @@ class BFXClient(object):
         Return the balances of all the coins.
 
             curl -X POST https://api.bitfinex.com/v1/balances
-            [{"type":"deposit", "currency":"btc", "amount":"0.0", "available":"0.0" },{ "type":"deposit", "currency":"usd", "amount":"1.0", "available":"1.0" }]
+            [{"type":"deposit", "currency":"btc", "amount":"0.0", "available":"0.0" },{ "type":"deposit", "currency":"usd", "amount":"1.0", "available":"1.0" }]  # noqa E501
+
 
         """
         path = "/v1/balances"
         return self._post_v1(path)
-
 
     # V2 Public Endpoints #
 
@@ -213,8 +215,8 @@ class BFXClient(object):
             GET /v2/tickers?symbols=...
             curl 'https://api.bitfinex.com/v2/tickers?symbols=tBTCUSD,tLTCUSD,fUSD'
             [
-                ["tBTCUSD", 6702.2, 82.42873442, 6702.3, 146.14652325, 82.2, 0.0124, 6702.3, 22520.92767376, 6771, 6576.9],
-                ["fUSD", 0.00020966, 0.00019301, 30, 4062509.97073771, 0.00017034, 5, 813114.16312721, -3.418e-05, -0.1593, 0.00018034, 231276127.5778418, 0.00021999, 4.9e-07]
+                ["tBTCUSD", 6702.2, 82.42873442, 6702.3, 146.14652325, 82.2, 0.0124, 6702.3, 22520.92767376, 6771, 6576.9],  # noqa E501
+                ["fUSD", 0.00020966, 0.00019301, 30, 4062509.97073771, 0.00017034, 5, 813114.16312721, -3.418e-05, -0.1593, 0.00018034, 231276127.5778418, 0.00021999, 4.9e-07]  # noqa E501
             ]
 
         """
@@ -225,6 +227,17 @@ class BFXClient(object):
             RType = rtypes.TradingPairData if result[0][0] == "t" else rtypes.FundingCurrencyData
             results.append(RType(*result))
         return results
+
+    def orderbook(self, symbol, limit_bids=50, limit_asks=50, group=True):
+        # curl https://api.bitfinex.com/v:version/book/:symbol
+        path = f"/v1/book/{symbol}"
+        params = {"limit_bids": limit_bids, "limit_asks": limit_asks, "group": group}
+        return self._get(path, params=params)
+
+    def symbol_book(self, symbol, precision="P0", price_points=25):
+        path = f"/v2/book/{symbol}/{precision}"
+        params = {"asdf": price_points}
+        return self._get(path, params=params)
 
 
 __all__ = [
