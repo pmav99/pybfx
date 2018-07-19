@@ -9,7 +9,7 @@ from json.decoder import JSONDecodeError
 
 import pandas as pd
 import requests
-
+from munch import munchify
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +94,7 @@ class BFXClient(object):
 
         """
         path = f"/v1/today/{symbol}"
-        return self._get(path)
+        return munchify(self._get(path))
 
     def ticker(self, symbol):
         """
@@ -109,7 +109,7 @@ class BFXClient(object):
 
         """
         path = f"/v1/pubticker/{symbol}"
-        return self._get(path)
+        return munchify(self._get(path))
 
     def stats(self, symbol):
         """
@@ -121,7 +121,7 @@ class BFXClient(object):
 
         """
         path = f"/v1/stats/{symbol}"
-        return self._get(path)
+        return munchify(self._get(path))
 
     def symbols(self):
         """
@@ -145,7 +145,7 @@ class BFXClient(object):
 
         """
         path = "/v1/symbols_details"
-        return self._get(path)
+        return munchify(self._get(path))
 
     # V1 Private Endpoints #
 
@@ -157,7 +157,7 @@ class BFXClient(object):
 
         """
         path = "/v1/account_infos"
-        return self._post_v1(path)
+        return munchify(self._post_v1(path))
 
     def key_info(self):
         """
