@@ -1,9 +1,6 @@
 import pandas as pd
 import pytest
 
-from pybfx import FundingCurrencyData
-from pybfx import TradingPairData
-
 
 class BasicTestClient(object):
 
@@ -81,19 +78,27 @@ class TestV2Public(BasicTestClient):
         requests_mock.get(self.client._url_for("/v2/platform/status"), json=json_response)
         assert self.client.platform_status() == result
 
+    def test_tickers_mixed_symbols(self):
+        symbols = ["tBTCUSD", "fUSD"]
+        with pytest.raises(ValueError) as error:
+            self.client.tickers(*symbols)
+        assert all(symbol in str(error.value) for symbol in symbols)
+
     @pytest.mark.parametrize("symbols, expected", [
-        (["tBTCUSD"], [TradingPairData("tBTCUSD", 6702.2, 82.42873442, 6702.3, 146.14652325, 82.2, 0.0124, 6702.3, 22520.92767376, 6771, 6576.9)]),   # noqa E501
-        (["fUSD"], [FundingCurrencyData("fUSD", 0.00020966, 0.00019301, 30, 4062509.97073771, 0.00017034, 5, 813114.16312721, -3.418e-05, -0.1593, 0.00018034, 231276127.5778418, 0.00021999, 4.9e-07)]),  # noqa E501
-        (["tBTCUSD", "fUSD"], [
-            TradingPairData("tBTCUSD", 6702.2, 82.42873442, 6702.3, 146.14652325, 82.2, 0.0124, 6702.3, 22520.92767376, 6771, 6576.9),  # noqa E501
-            FundingCurrencyData("fUSD", 0.00020966, 0.00019301, 30, 4062509.97073771, 0.00017034, 5, 813114.16312721, -3.418e-05, -0.1593, 0.00018034, 231276127.5778418, 0.00021999, 4.9e-07),  # noqa E501
-        ])
+        (["tBTCUSD"], ["tBTCUSD", 6702.2, 82.42873442, 6702.3, 146.14652325, 82.2, 0.0124, 6702.3, 22520.92767376, 6771, 6576.9]),   # noqa E501
+        (["fUSD"], ["fUSD", 0.00020966, 0.00019301, 30, 4062509.97073771, 0.00017034, 5, 813114.16312721, -3.418e-05, -0.1593, 0.00018034, 231276127.5778418, 0.00021999, 4.9e-07]),  # noqa E501
+        (["tBTCUSD", "tBTCEUR"], [
+            ["tBTCUSD", 6702.2, 82.42873442, 6702.3, 146.14652325, 82.2, 0.0124, 6702.3, 22520.92767376, 6771, 6576.9],  # noqa E501
+            ["tBTCUSD", 6702.2, 82.42873442, 6702.3, 146.14652325, 82.2, 0.0124, 6702.3, 22520.92767376, 6771, 6576.9],  # noqa E501
+        ]),
     ])
-    def test_tickers(self, requests_mock, symbols, expected):
+    def test_tickers_df(self, requests_mock, symbols, expected):
         requests_mock.get(self.client._url_for("/v2/tickers?symbols=%s" % ",".join(symbols)), json=expected)
         results = self.client.tickers(*symbols)
-        assert all(isinstance(r, (TradingPairData, FundingCurrencyData)) for r in results)
-        assert expected == results
+        assert isinstance(results, pd.DataFrame)
+        assert len(results) == len(symbols)
+        # assert all(item in results.columns for item in ["symbol", "bid", "ask", "last_price", "volume"])
+        assert self.client._tickers_to_df(symbols, expected).equals(results)
 
     def test_candles_raw(self, requests_mock):
         raw = True

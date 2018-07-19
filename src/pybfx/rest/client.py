@@ -10,7 +10,6 @@ from json.decoder import JSONDecodeError
 import pandas as pd
 import requests
 
-from . import rtypes
 
 logger = logging.getLogger(__name__)
 
@@ -206,7 +205,32 @@ class BFXClient(object):
         path = "/v2/platform/status"
         return bool(self._get(path)[0])
 
-    def tickers(self, *symbols):
+    def _tickers_validate(self, symbols):
+        if not len({s[0] for s in symbols}) == 1:
+            msg = "Mixed trading and funding symbols. Please make separate calls: %r"
+            raise ValueError(msg % str(symbols))
+
+    def _tickers_to_df(self, symbols, results):
+        # When there are multiple symbols the API returns a list of lists,
+        # while, when there ia a single symbol, the API returns a single list.
+        # In the latter case, we need to convert the list to a list of lists.
+        if len(symbols) == 1:
+            results = [results]
+        if len(results[0]) == 11:
+            columns = [
+                'symbol', 'bid', 'bid_size', 'ask', 'ask_size', 'daily_change',
+                'daily_change_perc', 'last_price', 'volume', 'high', 'low'
+            ]
+        else:
+            columns = [
+                'symbol', 'frr', 'bid', 'bid_size', 'bid_period', 'ask', 'ask_size', 'ask_period',
+                'daily_change', 'daily_change_perc', 'last_price', 'volume', 'high', 'low'
+            ]
+        df = pd.DataFrame(results, columns=columns)
+        df = df.set_index("symbol")
+        return df
+
+    def tickers(self, *symbols, raw=False):
         """
         Return a high level overview of the state of the market.
 
@@ -221,12 +245,12 @@ class BFXClient(object):
             ]
 
         """
+        self._tickers_validate(symbols)
         params = {"symbols": ",".join(symbols)}
         path = "/v2/tickers"
-        results = []
-        for result in self._get(path, params=params):
-            RType = rtypes.TradingPairData if result[0][0] == "t" else rtypes.FundingCurrencyData
-            results.append(RType(*result))
+        results = self._get(path, params=params)
+        if not raw:
+            results = self._tickers_to_df(symbols, results)
         return results
 
     def orderbook(self, symbol, limit_bids=50, limit_asks=50, group=True):
