@@ -1,3 +1,4 @@
+import pandas as pd
 import pytest
 
 from pybfx import FundingCurrencyData
@@ -93,3 +94,31 @@ class TestV2Public(BasicTestClient):
         results = self.client.tickers(*symbols)
         assert all(isinstance(r, (TradingPairData, FundingCurrencyData)) for r in results)
         assert expected == results
+
+    def test_candles_raw(self, requests_mock):
+        raw = True
+        symbol = "tBTCUSD"
+        timeframe = "1D"
+        json_response = [[100, 300, 400, 450, 270, 10000], [101, 410, 500, 350, 580, 20000]]
+        expected = json_response
+        url = self.client._url_for(f"/v2/candles/trade:{timeframe}:{symbol}/hist?limit=100&sort=False")
+        requests_mock.get(url, json=json_response)
+        results = self.client.candles(symbol, timeframe, raw=raw)
+        assert len(results) == 2
+        assert all(len(item) == 6 for item in results)
+        assert expected == results
+
+    def test_candles_dataframe(self, requests_mock):
+        raw = False
+        symbol = "tBTCUSD"
+        timeframe = "1D"
+        json_response = [[100, 300, 400, 450, 270, 10000], [101, 410, 500, 350, 580, 20000]]
+        expected = self.client._candles_to_df(symbol, json_response)
+        url = self.client._url_for(f"/v2/candles/trade:{timeframe}:{symbol}/hist?limit=100&sort=False")
+        requests_mock.get(url, json=json_response)
+        results = self.client.candles(symbol, timeframe, raw=raw)
+        assert len(results) == 2
+        assert isinstance(results, pd.DataFrame)
+        assert set(results.columns) == {"symbol", "open", "close", "high", "low", "volume"}
+        assert results.index.name == "ts"
+        assert results.equals(expected)

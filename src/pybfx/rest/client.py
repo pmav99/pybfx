@@ -7,6 +7,7 @@ import os
 import time
 from json.decoder import JSONDecodeError
 
+import pandas as pd
 import requests
 
 from . import rtypes
@@ -238,6 +239,38 @@ class BFXClient(object):
         path = f"/v2/book/{symbol}/{precision}"
         params = {"asdf": price_points}
         return self._get(path, params=params)
+
+    @staticmethod
+    def _candles_to_df(symbol, results):
+        df = pd.DataFrame(results, columns=["ts", "open", "close", "high", "low", "volume"])
+        df = df.assign(
+            symbol=symbol,
+            ts=pd.to_datetime(df.ts, unit="ms"),
+        )
+        df = df.set_index("ts")
+        return df
+
+    @staticmethod
+    def _candles_validate(symbol, timeframe):
+        if not symbol.startswith("t"):
+            raise ValueError("Invalid symbol: %s" % symbol)
+        valid = {'1m', '5m', '15m', '30m', '1h', '3h', '6h', '12h', '1D', '7D', '14D', '1M'}
+        if timeframe not in valid:
+            raise ValueError("Invalid timeframe: %s" % timeframe)
+
+    def candles(self, symbol, timeframe, limit=100, start=None, end=None, sort=False, raw=False):
+        self._candles_validate(symbol, timeframe)
+        path = f"/v2/candles/trade:{timeframe}:{symbol}/hist"
+        params = {
+            "limit": limit,
+            "start": start,
+            "end": end,
+            "sort": sort,
+        }
+        results = self._get(path, params=params)
+        if not raw:
+            results = self._candles_to_df(symbol, results)
+        return results
 
 
 __all__ = [
