@@ -136,7 +136,7 @@ class BFXClient(object):
         path = "/v1/symbols"
         return self._get(path)
 
-    def symbol_details(self):
+    def symbols_details(self):
         """
         Return a list of valid symbol IDs and the pair details.
 
@@ -145,7 +145,7 @@ class BFXClient(object):
             [{"expiration": "NA", "initial_margin": "30.0", "margin": False, "maximum_order_size": "100000.0", "minimum_margin": "15.0", "minimum_order_size": "190.0", "pair": "iqxeos", "price_precision": 5}]  # noqa E501
 
         """
-        path = "/v1/symbol_details"
+        path = "/v1/symbols_details"
         return self._get(path)
 
     # V1 Private Endpoints #
