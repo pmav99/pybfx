@@ -226,8 +226,8 @@ class BFXClient(object):
     def _tickers_to_df_trading_pair(self, results):
         # This is a traiding pair
         columns = [
-            'symbol', 'bid', 'bid_size', 'ask', 'ask_size', 'daily_change',
-            'daily_change_perc', 'last_price', 'volume', 'high', 'low'
+            'symbol', 'bid', 'bid_size', 'ask', 'ask_size', 'daily_change', 'daily_change_perc',
+            'last_price', 'volume', 'high', 'low'
         ]
         df = pd.DataFrame(results, columns=columns)
         df = df.assign(
@@ -244,9 +244,7 @@ class BFXClient(object):
             'daily_change', 'daily_change_perc', 'last_price', 'volume', 'high', 'low'
         ]
         df = pd.DataFrame(results, columns=columns)
-        df = df.assign(
-            base=df.symbol.str.lower()[1:4],
-        )
+        df = df.assign(base=df.symbol.str.lower()[1:4])
         df = df[["base"] + columns]
         return df
 
