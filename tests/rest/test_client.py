@@ -14,7 +14,7 @@ class TestBFXClient(BasicTestClient):
 
     def test_can_create_client_instance(self):
         from pybfx import BFXClient
-        client = BFXClient()  # noqa F481
+        BFXClient()
 
     @pytest.mark.parametrize("method", [requests.get, requests.post])
     def test_can_make_requests(self, requests_mock, method):
