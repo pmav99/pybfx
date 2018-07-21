@@ -52,15 +52,18 @@ class BFXClient(object):
         response = method(
             url, params=params, headers=headers, data=data, timeout=self.timeout, verify=True
         )
-        if response.status_code == 200:
-            return response.json()
-        else:
-            try:
-                content = response.json()
-            except JSONDecodeError:
-                content = response.text
+
+        try:
+            content = response.json()
+        except JSONDecodeError:
+            content = response.text
             logger.error("Couldn't access: %s", response.url)
             raise BFXException(response.status_code, response.reason, content)
+        else:
+            if response.status_code == 200:
+                return content
+            else:
+                raise BFXException(response.status_code, response.reason, content)
 
     def _url_for(self, path):
         return self.base_url + path
@@ -317,4 +320,5 @@ class BFXClient(object):
 
 __all__ = [
     "BFXClient",
+    "BFXException",
 ]

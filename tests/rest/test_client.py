@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+import requests
 
 
 class BasicTestClient(object):
@@ -14,6 +15,26 @@ class TestBFXClient(BasicTestClient):
     def test_can_create_client_instance(self):
         from pybfx import BFXClient
         client = BFXClient()  # noqa F481
+
+    @pytest.mark.parametrize("method", [requests.get, requests.post])
+    def test_can_make_requests(self, requests_mock, method):
+        url = self.client._url_for("/random_endpoint")
+        expected = {"ok": True}
+        requests_mock.get(url, json=expected)
+        requests_mock.post(url, json=expected)
+        results = self.client._handle_request(method, url=url)
+        assert results == expected
+
+    @pytest.mark.parametrize("method", [requests.get, requests.post])
+    def test_make_request_at_endpoint_that_does_not_return_to_json(self, requests_mock, method):
+        from pybfx import BFXException
+        url = self.client._url_for("/random_endpoint")
+        expected = "gibberish"
+        requests_mock.get(url, text=expected)
+        requests_mock.post(url, text=expected)
+        with pytest.raises(BFXException) as error:
+            self.client._handle_request(method, url)
+        assert expected in str(error.value)
 
 
 class TestV1Public(BasicTestClient):
