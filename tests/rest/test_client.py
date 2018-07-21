@@ -97,8 +97,7 @@ class TestV2Public(BasicTestClient):
         results = self.client.tickers(*symbols)
         assert isinstance(results, pd.DataFrame)
         assert len(results) == len(symbols)
-        # assert all(item in results.columns for item in ["symbol", "bid", "ask", "last_price", "volume"])
-        assert self.client._tickers_to_df(symbols, expected).equals(results)
+        assert self.client._tickers_to_df(expected).equals(results)
 
     def test_candles_raw(self, requests_mock):
         raw = True

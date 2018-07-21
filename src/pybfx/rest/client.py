@@ -210,24 +210,44 @@ class BFXClient(object):
             msg = "Mixed trading and funding symbols. Please make separate calls: %r"
             raise ValueError(msg % str(symbols))
 
-    def _tickers_to_df(self, symbols, results):
-        # When there are multiple symbols the API returns a list of lists,
-        # while, when there ia a single symbol, the API returns a single list.
-        # In the latter case, we need to convert the list to a list of lists.
-        if len(symbols) == 1:
+    def _tickers_to_df(self, results):
+        # When we have a single symbol then `results` is a list.
+        # When we have multiple symbols, then `results` is a list of lists.
+        # In the former case we need to convert results to a list of lists too.
+        if isinstance(results[0], str):
             results = [results]
-        if len(results[0]) == 11:
-            columns = [
-                'symbol', 'bid', 'bid_size', 'ask', 'ask_size', 'daily_change',
-                'daily_change_perc', 'last_price', 'volume', 'high', 'low'
-            ]
+        if results[0][0].startswith("t"):
+            df = self._tickers_to_df_trading_pair(results)
         else:
-            columns = [
-                'symbol', 'frr', 'bid', 'bid_size', 'bid_period', 'ask', 'ask_size', 'ask_period',
-                'daily_change', 'daily_change_perc', 'last_price', 'volume', 'high', 'low'
-            ]
-        df = pd.DataFrame(results, columns=columns)
+            df = self._tickers_to_df_funding_currency(results)
         df = df.set_index("symbol")
+        return df
+
+    def _tickers_to_df_trading_pair(self, results):
+        # This is a traiding pair
+        columns = [
+            'symbol', 'bid', 'bid_size', 'ask', 'ask_size', 'daily_change',
+            'daily_change_perc', 'last_price', 'volume', 'high', 'low'
+        ]
+        df = pd.DataFrame(results, columns=columns)
+        df = df.assign(
+            base=df.symbol.str[1:4].str.lower(),
+            quote=df.symbol.str[4:7].str.lower(),
+        )
+        df = df[["base", "quote"] + columns]
+        return df
+
+    def _tickers_to_df_funding_currency(self, results):
+        # This is a funding Currency
+        columns = [
+            'symbol', 'frr', 'bid', 'bid_size', 'bid_period', 'ask', 'ask_size', 'ask_period',
+            'daily_change', 'daily_change_perc', 'last_price', 'volume', 'high', 'low'
+        ]
+        df = pd.DataFrame(results, columns=columns)
+        df = df.assign(
+            base=df.symbol.str.lower()[1:4],
+        )
+        df = df[["base"] + columns]
         return df
 
     def tickers(self, *symbols, raw=False):
@@ -250,7 +270,7 @@ class BFXClient(object):
         path = "/v2/tickers"
         results = self._get(path, params=params)
         if not raw:
-            results = self._tickers_to_df(symbols, results)
+            results = self._tickers_to_df(results)
         return results
 
     def orderbook(self, symbol, limit_bids=50, limit_asks=50, group=True):
