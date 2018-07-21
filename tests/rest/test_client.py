@@ -99,6 +99,14 @@ class TestV2Public(BasicTestClient):
         assert len(results) == len(symbols)
         assert self.client._tickers_to_df(expected).equals(results)
 
+    def test_tickers_raw(self, requests_mock):
+        symbol = "tBTCUSD"
+        expected = ["tBTCUSD", 6702.2, 82.42873442, 6702.3, 146.14652325, 82.2, 0.0124, 6702.3, 22520.92767376, 6771, 6576.9]  # noqa E501
+        requests_mock.get(self.client._url_for(f"/v2/tickers?symbols={symbol}"), json=expected)
+        results = self.client.tickers(symbol, raw=True)
+        assert isinstance(results, list)
+        assert results == expected
+
     def test_candles_raw(self, requests_mock):
         raw = True
         symbol = "tBTCUSD"
